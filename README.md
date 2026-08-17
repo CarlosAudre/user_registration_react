@@ -1,10 +1,3 @@
-
-### FRONTEND
-
-A API será executada por padrão em:
-http://localhost:8081
-
-```markdown
 # User CRUD - Frontend
 
 Interface web para gerenciamento de usuários, desenvolvida com React.
@@ -31,14 +24,18 @@ Interface web para gerenciamento de usuários, desenvolvida com React.
 
 Clone o repositório:
 
-```bash
+~~~bash
 git clone https://github.com/CarlosAudre/user_registration_react.git
+~~~
 
 Instale as dependências:
 
-
+~~~bash
 npm install
+~~~
 
-Rode com:
-```bash
+Rode o projeto:
+
+~~~bash
 npm run dev
+~~~
