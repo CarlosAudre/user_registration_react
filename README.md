@@ -29,7 +29,14 @@ Interface web para gerenciamento de usuários, desenvolvida com React.
 
 ## Como executar
 
+Clone o repositório:
+
+```bash
+git clone https://github.com/CarlosAudre/user_registration_react.git
+
 Instale as dependências:
 
 ```bash
 npm install
+
+rode com npm run dev
