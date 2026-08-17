@@ -36,7 +36,7 @@ git clone https://github.com/CarlosAudre/user_registration_react.git
 
 Instale as dependências:
 
-```bash
+
 npm install
 
 Rode com:
