@@ -1,10 +1,28 @@
 import { Search, Pencil, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AlertMessage } from "../components/AlertMessage";
+import { UpdateUserForm } from "../components/form/UpdateUserForm";
+import toast from "react-hot-toast";
 export function Home() {
   //API URL----------------------------------------------------------------------------------------------------------------------------------
   const url = "http://localhost:8081";
   const [search, setSearch] = useState("");
   const [users, setUsers] = useState([]);
+
+  const [deleteUserAlertVisibility, setDeleteUserAlertVisibility] =
+    useState(false);
+
+  const [updateUserFormVisibility, setUpdateUserFormVisibility] =
+    useState(false);
+
+  const [userId, setUserId] = useState("");
+
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    birthDate: "",
+  });
 
   useEffect(() => {
     async function getAllUsers() {
@@ -24,6 +42,90 @@ export function Home() {
   }, []);
 
   console.log(users);
+
+  async function updateUser(id) {
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch(`${url}/users/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(form),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        toast.error(data.message);
+        return null;
+      }
+
+      const data = await response.json();
+
+      toast.success("Usuário atualizado com sucesso!");
+      return data;
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
+  async function handleOnSubmit(id) {
+    console.log("ID recebido no submit:", id);
+    const data = await updateUser(id);
+
+    if (!data) return;
+
+    setUsers((users) =>
+      users.map((user) =>
+        user.id === id
+          ? {
+              ...user,
+              name: data.name,
+              email: data.email,
+              phone: data.phone,
+              birthDate: data.birthDate,
+            }
+          : user,
+      ),
+    );
+
+    setUpdateUserFormVisibility(false);
+  }
+
+  async function deleteUser(id) {
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch(`${url}/users/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        toast.error(data.message);
+        return false;
+      }
+
+      toast.success("Usuário excluído com sucesso!");
+      return true;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
+
+  async function handleOnDelete(id) {
+    const response = await deleteUser(id);
+
+    if (!response) return;
+
+    setUsers((users) => users.filter((user) => user.id !== id));
+  }
 
   return (
     <div className="flex flex-col p-5 gap-10">
@@ -50,6 +152,34 @@ export function Home() {
           </div>
         </div>
 
+        {updateUserFormVisibility && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <UpdateUserForm
+              form={form}
+              setForm={setForm}
+              handleSubmit={(e) => {
+                e.preventDefault();
+                handleOnSubmit(userId);
+              }}
+            />
+          </div>
+        )}
+
+        {deleteUserAlertVisibility && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <AlertMessage
+              title="Deseja deletar esse usuário"
+              handleOnCancel={() =>
+                setDeleteUserAlertVisibility((prev) => !prev)
+              }
+              handleOnSubmit={() => {
+                handleOnDelete(userId);
+                setDeleteUserAlertVisibility((prev) => !prev);
+              }}
+            />
+          </div>
+        )}
+
         <div className="overflow-x-auto rounded-lg border border-slate-700">
           <table className="w-full text-sm text-left text-gray-300">
             <thead className="bg-[#172238] text-gray-200">
@@ -66,36 +196,59 @@ export function Home() {
 
             <tbody>
               {users
-              .filter((user) => user.name.toLowerCase().includes(search.toLocaleLowerCase()) ||
-                user.cpf.includes(search) 
-            )
-              .map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-t border-slate-700 hover:bg-slate-800/50"
-                >
-                  <td className="px-5 py-4">{user.name}</td>
-                  <td className="px-5 py-4">{user.email}</td>
-                  <td className="px-5 py-4">{user.cpf}</td>
-                  <td className="px-5 py-4">{user.phone}</td>
-                  <td className="px-5 py-4">{user.createDate}</td>
-                  <td className="px-5 py-4">{user.birthDate}</td>
+                .filter(
+                  (user) =>
+                    user.name
+                      .toLowerCase()
+                      .includes(search.toLocaleLowerCase()) ||
+                    user.cpf.includes(search),
+                )
+                .map((user) => (
+                  <tr
+                    key={user.id}
+                    className="border-t border-slate-700 hover:bg-slate-800/50"
+                  >
+                    <td className="px-5 py-4">{user.name}</td>
+                    <td className="px-5 py-4">{user.email}</td>
+                    <td className="px-5 py-4">{user.cpf}</td>
+                    <td className="px-5 py-4">{user.phone}</td>
+                    <td className="px-5 py-4">{user.createDate}</td>
+                    <td className="px-5 py-4">{user.birthDate}</td>
 
-                  <td className="px-5 py-4">
-                    <div className="flex justify-center gap-3">
-                      <button className="border border-indigo-500 text-indigo-400 p-2 rounded cursor-pointer
-                       hover:bg-indigo-500/30">
-                        <Pencil/>
-                      </button>
+                    <td className="px-5 py-4">
+                      <div className="flex justify-center gap-3">
+                        <button
+                          className="border border-indigo-500 text-indigo-400 p-2 rounded cursor-pointer
+                       hover:bg-indigo-500/30"
+                          onClick={() => {
+                            console.log("ID do usuário:", user.id);
+                            setUserId(user.id);
+                            setForm({
+                              name: user.name,
+                              email: user.email,
+                              phone: user.phone,
+                              birthDate: user.birthDate,
+                            });
+                            setUpdateUserFormVisibility((prev) => !prev);
+                          }}
+                        >
+                          <Pencil />
+                        </button>
 
-                      <button className="border border-red-500 text-red-400 p-2 rounded cursor-pointer
-                      hover:bg-red-500/30">
-                        <Trash/>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        <button
+                          className="border border-red-500 text-red-400 p-2 rounded cursor-pointer
+                      hover:bg-red-500/30 "
+                          onClick={() => {
+                            setUserId(user.id);
+                            setDeleteUserAlertVisibility((prev) => !prev);
+                          }}
+                        >
+                          <Trash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

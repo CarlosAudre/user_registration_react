@@ -1,4 +1,4 @@
-import { Mail, Lock, User, Phone, Calendar, FileText } from "lucide-react";
+import { Mail, Lock, User, Phone, Calendar, FileText, Eye, EyeClosed } from "lucide-react";
 import { TextField } from "../TextField";
 import { SubmitButton } from "./SubmitButton";
 import { useState } from "react";
@@ -161,6 +161,8 @@ export function Register() {
             type="password"
             placeholder="**********"
             icon1={Lock}
+            icon2={EyeClosed}
+            icon3={Eye}
             onChange={(e) =>
               setForm((prev) => ({
                 ...prev,
