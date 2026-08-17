@@ -39,4 +39,6 @@ Instale as dependências:
 ```bash
 npm install
 
-rode com npm run dev
+Rode com:
+```bash
+npm run dev
